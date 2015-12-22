@@ -6,7 +6,6 @@ import songStore from './song';
 
 export default {
     stub,
-    artists: [],
     
     state: {
         albums: [stub],    
@@ -18,8 +17,6 @@ export default {
      * @param  array artists The array of artists to extract album data from.
      */
     init(artists) {
-        this.artists = artists;
-
         // Traverse through the artists array and add their albums into our master album list.
         this.state.albums = _.reduce(artists, (albums, artist) => {
             // While we're doing so, for each album, we get its length
@@ -33,7 +30,10 @@ export default {
         }, []);
 
         // Then we init the song store.
-        songStore.init(this.state.albums);
+        return {
+            albums: this.state.albums,
+            songs: songStore.init(this.state.albums),
+        };
     },
 
     all() {

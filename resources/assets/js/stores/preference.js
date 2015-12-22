@@ -17,11 +17,7 @@ export default {
      * Init the store
      * @param  object user The user whose preferences we are managing.
      */
-    init(user = null) {
-        if (!user) {
-            user = userStore.current();
-        }
-
+    init(user) {
         this.storeKey = `preferences_${user.id}`;
         _.extend(this.state, ls.get(this.storeKey, this.state));
     },

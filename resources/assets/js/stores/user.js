@@ -3,7 +3,6 @@ import { md5 } from 'blueimp-md5';
 
 import http from '../services/http';
 import stub from '../stubs/user';
-import sharedStore from './shared';
 
 export default {
     stub,
@@ -21,11 +20,7 @@ export default {
      *                     For production, this data is retrieved from the shared store.
      *                     
      */
-    init(data = null) {
-        if (!data) {
-            data = sharedStore.state;
-        }
-
+    init(data) {
         this.state.users = data.users;
         this.state.current = data.currentUser;
 

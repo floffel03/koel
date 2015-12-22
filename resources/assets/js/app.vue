@@ -56,7 +56,6 @@
             // Make the most important HTTP request to get all necessary data from the server.
             // Afterwards, init all mandatory stores and services.
             sharedStore.init(() => {
-                this.initStores();
                 playback.init(this);
 
                 this.hideOverlay();
@@ -70,21 +69,6 @@
         },
 
         methods: {
-            /**
-             * Initialize all stores to be used throughout the application.
-             */
-            initStores() {
-                userStore.init();
-                preferenceStore.init();
-                
-                // This will init album and song stores as well.
-                artistStore.init();
-
-                playlistStore.init();
-                queueStore.init();
-                settingStore.init();
-            },
-
             /**
              * Toggle playback when user presses Space key.
              *

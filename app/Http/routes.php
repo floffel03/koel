@@ -17,7 +17,7 @@ Route::group(['prefix' => 'api', 'middleware' => 'auth', 'namespace' => 'API'], 
         // Just acting as a ping service.
     });
 
-    get('data', 'DataController@index');
+    get('data/{cacheTimestamp?}', 'DataController@index')->where('cacheTimestamp', '\d+');
 
     post('settings', 'SettingController@save');
 

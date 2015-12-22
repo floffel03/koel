@@ -7,6 +7,7 @@ use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Setting;
 use App\Models\Song;
+use Cache;
 use Exception;
 use getID3;
 use getid3_lib;
@@ -64,12 +65,20 @@ class Media
             }
         }
 
+
+
         // Delete non-existing songs.
         $hashes = array_map(function ($f) {
             return $this->getHash($f->getPathname());
         }, array_merge($results['ugly'], $results['good']));
 
-        Song::whereNotIn('id', $hashes)->delete();
+        $deleted = Song::whereNotIn('id', $hashes)->delete();
+
+        // If there are new/modified songs, or there are deleted songs, reset the cache timestamp,
+        // so that the next request from client will get the fresh data.
+        if ($results['good'] || $deleted) {
+            Cache::put('cacheTimestamp', time(), 24 * 60 * 30 * 12);
+        }
 
         // Empty albums and artists should be gone as well.
         $inUseAlbums = Song::select('album_id')->groupBy('album_id')->get()->lists('album_id');

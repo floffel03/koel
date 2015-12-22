@@ -12,8 +12,8 @@ export default {
         playlists: [],
     },
 
-    init() {
-        this.state.playlists = sharedStore.state.playlists;
+    init(playlists) {
+        this.state.playlists = playlists;
 
         _.each(this.state.playlists, this.getSongs);
     },

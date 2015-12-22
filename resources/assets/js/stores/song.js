@@ -3,15 +3,11 @@ import _ from 'lodash';
 import http from '../services/http';
 import utils from '../services/utils';
 import stub from '../stubs/song';
-import albumStore from './album';
 import favoriteStore from './favorite';
-import sharedStore from './shared';
-import useStore from './user';
+import useStorer from './user';
 
 export default {
     stub,
-    sharedStore: null,
-    albums: [],
 
     state: {
         songs: [stub],
@@ -21,13 +17,10 @@ export default {
     /**
      * Init the store.
      * 
-     * @param  array albums         The array of albums to extract our songs from
-     * @param  array interactions   The array of interactions (like/play count) of the current user
+     * @param {Array} albums The array of albums to extract our songs from
      */
-    init(albums, interactions = null) {
-        this.albums = albums;
-
-        this.state.interactions = interactions ? interactions : sharedStore.state.interactions;
+    init(albums) {
+        
 
         // Iterate through the albums. With each, add its songs into our master song list.
         this.state.songs = _.reduce(albums, (songs, album) => {
@@ -37,16 +30,31 @@ export default {
 
                 // Keep a back reference to the album
                 song.album = album;
-                
-                this.setInteractionStats(song);
-
-                if (song.liked) {
-                    favoriteStore.add(song);
-                }
             });
             
             return songs.concat(album.songs);
         }, []);
+
+        return this.state.songs;
+    },
+
+    /**
+     * Init the interactions (liked/play count) for our songs.
+     * 
+     * @param  {Array} interactions
+     */
+    initInteractions(interactions) {
+        this.state.interactions = interactions;
+
+        _.each(this.state.interactions, interaction => {
+            var song = this.byId(interaction.song_id);
+            song.liked = interaction.liked;
+            song.playCount = interaction.play_count;
+
+            if (song.liked) {
+                favoriteStore.add(song);
+            }
+        });
     },
 
     /**
@@ -76,25 +84,6 @@ export default {
      */
     byIds(ids) {
         return _.filter(this.state.songs, song => _.contains(ids, song.id));
-    },
-
-    /**
-     * Set the interaction stats (like status and playcount) for a song.
-     *
-     * @param object song
-     */
-    setInteractionStats(song) {
-        var interaction = _.find(this.state.interactions, { song_id: song.id });
-
-        if (!interaction) {
-            song.liked = false;
-            song.playCount = 0;
-
-            return;
-        }
-
-        song.liked = interaction.liked;
-        song.playCount = interaction.play_count;
     },
 
     /**
@@ -159,7 +148,7 @@ export default {
      * @param  {Function} cb 
      */
     scrobble(song, cb = null) {
-        if (!sharedStore.state.useLastfm || !useStore.current().preferences.lastfm_session_key) {
+        if (!window.useLastfm || !useStorer.current().preferences.lastfm_session_key) {
             return;
         }
 
